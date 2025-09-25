@@ -1,0 +1,128 @@
+								Assessment 2
+Restaurant Ordering System
+
+Design a Python class RestaurantSystem to simulate a basic restaurant order
+management process. The system should support:
+Functional Requirements:
+➔ Display Menu:
+◆ Show a list of food items with prices and item codes.
+➔ Take Order:
+◆ Allow users to select multiple items by item code and quantity.
+◆ Calculate total price and generate a unique order ID.
+➔ View Order:
+◆ Look up details of an order using the order ID.
+➔ Cancel Order:
+◆ Cancel an existing order using the order ID.
+➔ Exit the system
+
+
+
+import uuid
+
+class RestaurantSystem:
+    def __init__(self):
+        # Menu: item_code -> {name, price}
+        self.menu = {
+            "101": {"name": "Pizza", "price": 250},
+            "102": {"name": "Burger", "price": 120},
+            "103": {"name": "Pasta", "price": 180},
+            "104": {"name": "Sandwich", "price": 100},
+            "105": {"name": "Cold Drink", "price": 60}
+        }
+        self.orders = {}  # order_id -> {items, total_price}
+
+    def display_menu(self):
+        print("\n📋 MENU")
+        print("-" * 30)
+        for code, details in self.menu.items():
+            print(f"{code} | {details['name']:<15} Rs.{details['price']}")
+        print("-" * 30)
+
+    def take_order(self):
+        self.display_menu()
+        order_items = []
+        total_price = 0
+
+        while True:
+            code = input("👉 Enter item code (or 'done' to finish): ").strip()
+            if code.lower() == 'done':
+                break
+
+            if code not in self.menu:
+                print("❌ Invalid item code! Try again.")
+                continue
+
+            try:
+                qty = int(input("Enter quantity: "))
+            except ValueError:
+                print("❌ Invalid quantity! Try again.")
+                continue
+
+            item_name = self.menu[code]['name']
+            item_price = self.menu[code]['price'] * qty
+            order_items.append((item_name, qty, item_price))
+            total_price += item_price
+            print(f"✅ Added {qty} x {item_name} = Rs.{item_price}")
+
+        if not order_items:
+            print("⚠️ No items selected. Order cancelled.")
+            return
+
+        order_id = str(uuid.uuid4())[:8]  # Unique 8-char ID
+        self.orders[order_id] = {"items": order_items, "total": total_price}
+        print("\n🧾 Order placed successfully!")
+        print(f"🆔 Order ID: {order_id}")
+        print(f"💰 Total Bill: Rs.{total_price}")
+
+    def view_order(self):
+        order_id = input("🔎 Enter Order ID to view: ").strip()
+        if order_id not in self.orders:
+            print("❌ Order not found!")
+            return
+
+        order = self.orders[order_id]
+        print("\n📦 Order Details")
+        print("-" * 40)
+        for item_name, qty, price in order["items"]:
+            print(f"{item_name:<15} x{qty:<3} Rs.{price}")
+        print("-" * 40)
+        print(f"💰 Total: Rs.{order['total']}")
+        print("-" * 40)
+
+    def cancel_order(self):
+        order_id = input("❌ Enter Order ID to cancel: ").strip()
+        if order_id not in self.orders:
+            print("❌ Order not found!")
+            return
+        del self.orders[order_id]
+        print(f"✅ Order {order_id} cancelled successfully!")
+
+    def run(self):
+        while True:
+            print("\n🍴 Restaurant Ordering System")
+            print("1. Display Menu")
+            print("2. Take Order")
+            print("3. View Order")
+            print("4. Cancel Order")
+            print("5. Exit")
+            choice = input("👉 Enter choice: ").strip()
+
+            if choice == "1":
+                self.display_menu()
+            elif choice == "2":
+                self.take_order()
+            elif choice == "3":
+                self.view_order()
+            elif choice == "4":
+                self.cancel_order()
+            elif choice == "5":
+                print("👋 Thank you for visiting! bye!")
+                break
+            else:
+                print("❌ Invalid choice! Try again.")
+
+
+# Run the system
+if __name__ == "__main__":
+    system = RestaurantSystem()
+    system.run()
