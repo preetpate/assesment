@@ -1,0 +1,203 @@
+1) Are there missing values? False
+df = pd.read_csv("stock_market_dataset.csv")
+
+missing_exist = df.isnull().values.any()
+print("Are there missing values?", missing_exist)
+print()
+
+print(df.isnull().sum())
+
+output :
+Stock              0
+Date               0
+Open               0
+High               0
+Low                0
+Close              0
+Volume             0
+SMA_10             0
+RSI                0
+MACD               0
+Bollinger_Upper    0
+Bollinger_Lower    0
+GDP_Growth         0
+Inflation_Rate     0
+Interest_Rate      0
+Sentiment_Score    0
+Next_Close         0
+Target             0
+dtype: int64
+
+2) 2. What is the data type of each column?
+
+print(df.dtypes)
+output:
+Stock               object
+Date                object
+Open               float64
+High               float64
+Low                float64
+Close              float64
+Volume               int64
+SMA_10             float64
+RSI                float64
+MACD               float64
+Bollinger_Upper    float64
+Bollinger_Lower    float64
+GDP_Growth         float64
+Inflation_Rate     float64
+Interest_Rate      float64
+Sentiment_Score    float64
+Next_Close         float64
+Target               int64
+dtype: object
+
+3) Convert the Date column to datetime format
+df["Date"] = pd.to_datetime(df["Date"])
+print(df["Date"].dtype)
+
+output :
+datetime64[ns]
+
+4) Check for duplicate rows
+duplicates = df.duplicated().sum()
+print("Number of duplicate rows:", duplicates)
+
+output :
+Number of duplicate rows: 0
+
+
+5) Check the range of RSI (Relative Strength Index)
+# First ensure RSI column exists
+if "RSI" in df.columns:
+    min_rsi = df["RSI"].min()
+    max_rsi = df["RSI"].max()
+    print(f"RSI range: {min_rsi} to {max_rsi}")
+else:
+    print("No RSI column found in the dataset.")
+
+output : 
+RSI range: 10.000910691042568 to 89.99970361452127
+
+6) Verify if Next_Close corresponds to the next day’s Close
+df["Date"] = pd.to_datetime(df["Date"])
+df = df.sort_values("Date").reset_index(drop=True)
+
+df["Matches_Next_Close"] = df["Next_Close"].shift(0) == df["Close"].shift(-1)
+
+mismatches = df["Matches_Next_Close"].value_counts()
+print(mismatches)
+print()
+print(df[~df["Matches_Next_Close"]])
+
+output :
+Matches_Next_Close
+False    50349
+Name: count, dtype: int64
+
+      Stock       Date        Open        High         Low       Close  \
+0      AAPL 2010-01-04  445.627510  465.464143  431.513035  450.378213   
+1      GOOG 2010-01-04  451.336879  461.572040  458.063523  460.271962   
+2      GOOG 2010-01-04  462.453220  476.247511  437.595740  456.412713   
+3      TSLA 2010-01-04  129.985483  131.740212  129.393312  131.310902   
+4      AAPL 2010-01-05  441.194244  449.726464  432.618124  437.397748   
+...     ...        ...         ...         ...         ...         ...   
+50344  MSFT 2202-12-23   91.020236   90.103635   86.503739   89.818931   
+50345  GOOG 2202-12-24  152.579600  152.627485  145.260818  152.121287   
+50346  GOOG 2202-12-27  312.393252  327.387747  312.822208  317.425446   
+50347  AAPL 2202-12-27  400.487909  400.074547  394.156744  399.377902   
+50348  AAPL 2202-12-27  407.856186  419.019683  406.473119  413.158422   
+
+        Volume      SMA_10        RSI      MACD  Bollinger_Upper  \
+0      2441288  301.310351  64.061774  2.449751       464.398638   
+1      2738221  330.523637  36.175889 -1.201520       473.767491   
+2      1273028  298.602339  43.463701 -0.084553       464.006812   
+3      4219658  219.817657  72.186857  2.436545       141.017446   
+4      4714199  280.015623  52.032235 -3.726473       450.099041   
+...        ...         ...        ...       ...              ...   
+50344  2447837  241.118258  52.648007  2.378461        96.093159   
+50345  3748527  291.206916  67.042556  4.128323       166.747121   
+50346  2218656  333.581529  34.724189  4.587935       327.358890   
+50347  2980721  272.722475  23.158021 -0.044044       411.272226   
+50348  3839273  379.736298  70.119325  2.095754       426.052778   
+
+       Bollinger_Lower  GDP_Growth  Inflation_Rate  Interest_Rate  \
+0           438.231589    2.845199        1.505217       4.360374   
+1           453.011087    3.361039        1.955436       3.236462   
+2           448.087166    3.012137        1.945464       3.067282   
+3           117.354627    2.757747        2.849737       2.239195   
+4           431.018080    3.352677        1.516110       2.309996   
+...                ...         ...             ...            ...   
+50344        83.667954    3.071308        2.754351       3.208269   
+50345       146.697534    2.526700        2.987866       1.056771   
+50346       306.796300    3.337175        2.958270       3.104801   
+50347       393.056910    2.904523        1.966931       0.884682   
+50348       405.875344    2.948156        2.999884       2.011631   
+
+       Sentiment_Score  Next_Close  Target  Matches_Next_Close  
+0            -0.079418  445.714557       0               False  
+1             0.303477  461.842517       1               False  
+2            -0.963269  462.591390       1               False  
+3            -0.276223  133.540710       1               False  
+4             0.511900  439.507357       1               False  
+...                ...         ...     ...                 ...  
+50344         0.863656   90.907101       1               False  
+50345        -0.388214  151.472296       0               False  
+50346        -0.977234  320.378684       1               False  
+50347        -0.448131  402.458709       1               False  
+50348        -0.438289  416.293712       1               False  
+
+[50349 rows x 19 columns]
+
+7) Check if any column has a constant value
+constant_cols = [col for col in df.columns if df[col].nunique() == 1]
+print("Constant columns:", constant_cols)
+
+output :
+Constant columns: ['Matches_Next_Close']
+
+8) Check if 'Target' only has 0s and 1s
+unique_targets = df["Target"].unique()
+print("Unique values in Target:", unique_targets)
+
+all_0_1 = set(unique_targets).issubset({0,1})
+print("Only 0 and 1 present?", all_0_1)
+
+output : 
+Unique values in Target: [0 1]
+Only 0 and 1 present? True
+
+9) Are there outliers in Volume?
+Q1 = df["Volume"].quantile(0.25)
+Q3 = df["Volume"].quantile(0.75)
+IQR = Q3 - Q1
+
+lower = Q1 - 1.5 * IQR
+upper = Q3 + 1.5 * IQR
+
+outliers = df[(df["Volume"] < lower) | (df["Volume"] > upper)]
+print("Number of Volume outliers:", len(outliers))
+print(outliers[["Date","Volume"]])
+
+output : 
+Number of Volume outliers: 0
+Empty DataFrame
+Columns: [Date, Volume]
+Index: []
+
+10) Check the correlation matrix
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+corr = df.corr()
+print(corr)
+
+plt.figure(figsize=(10,8))
+sns.heatmap(corr, annot=True, cmap="coolwarm")
+plt.title("Correlation Matrix")
+plt.show()
+
+
+
+
+
